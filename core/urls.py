@@ -11,6 +11,7 @@ urlpatterns = [
     path('feedback/', views.feedback_view, name='feedback'),
     path('profile/', views.profile_view, name='profile'),
     path('logout/', views.logout_view, name='logout'),
+    path('2fa/', views.two_factor_view, name='two_factor'),
     # path('ai-suggestions/', views.ai_suggestions_view, name='ai_suggestions'),
     path('generate_poster/', views.poster_generator_view, name='generate_poster'),
     path('chatbot/', views.chatbot_view, name='chatbot'),

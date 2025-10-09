@@ -1,0 +1,83 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Two-Factor Authentication - ParlorPal{% endblock %}
+
+{% block extra_css %}
+<style>
+  .auth-container { min-height: 100vh; display:flex; align-items:center; background: linear-gradient(135deg, var(--bg-light), var(--white)); padding:2rem 0; }
+  .auth-card { background: var(--white); border-radius: var(--border-radius); box-shadow: var(--shadow-medium); padding: 2rem; border:1px solid rgba(168,139,235,0.1); }
+  .auth-title { font-size: 1.75rem; font-weight: 700; color: var(--text-dark); }
+  .auth-subtitle { color: var(--text-gray); }
+  .qr-box { display:flex; justify-content:center; margin: 1rem 0 1.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-5 col-md-7 col-sm-9">
+        <div class="auth-card">
+          <div class="text-center mb-3">
+            <h2 class="auth-title">Two‑Factor Authentication</h2>
+            <p class="auth-subtitle mb-0">Account: <strong>{{ account_name }}</strong></p>
+          </div>
+
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+
+          {% if show_qr %}
+            <div class="mb-3">
+              <p>Scan this QR code in your authenticator app (Google Authenticator, Authy, 1Password, etc.). If you can’t scan, add the account manually using the secret.</p>
+              <div class="qr-box">
+                <img src="{{ qr_url }}" alt="2FA QR"
+                     width="200" height="200"
+                     onerror="this.style.display='none';document.getElementById('qr-fallback').classList.remove('d-none');"/>
+              </div>
+              <div id="qr-fallback" class="d-none">
+                <div class="alert alert-warning">
+                  QR image failed to load (possibly blocked by the network). Use the details below to set up 2FA manually.
+                </div>
+                <div class="mb-2">
+                  <strong>Secret:</strong>
+                  <code>{{ secret }}</code>
+                </div>
+                <div class="mb-2">
+                  <strong>Provisioning URI:</strong>
+                  <code style="word-break:break-all;">{{ provisioning_uri }}</code>
+                </div>
+                <div class="mb-3">
+                  <a class="btn btn-outline-secondary btn-sm" href="{{ qr_url }}" target="_blank">Open QR in new tab</a>
+                </div>
+              </div>
+              <p class="text-muted small text-center">Issuer: {{ issuer }}</p>
+              <hr />
+            </div>
+          {% endif %}
+
+          <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="code" class="form-label">Enter 6‑digit code</label>
+              <input type="text" pattern="\d{6}" maxlength="6" class="form-control" id="code" name="code" placeholder="123456" required>
+              <div class="form-text">Open your authenticator app and enter the current code.</div>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Verify and Continue</button>
+          </form>
+
+          <div class="text-center mt-3">
+            <a class="auth-link" href="{% url 'login' %}">&larr; Back to Login</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

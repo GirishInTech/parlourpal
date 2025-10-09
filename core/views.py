@@ -10,6 +10,7 @@ import uuid
 from io import BytesIO
 from datetime import datetime
 import json
+from urllib.parse import quote
 
 # Third-Party Imports
 import cohere
@@ -18,6 +19,7 @@ import google.api_core.exceptions
 import cloudinary.uploader
 from PIL import Image, ImageDraw, ImageFont
 from dotenv import load_dotenv
+import pyotp
 
 # Django Imports
 from django.shortcuts import render, redirect
@@ -33,7 +35,7 @@ from django.views.decorators.http import require_POST
 
 # Local Application Imports
 from .forms import RegisterForm, LoginForm, BusinessProfileForm
-from .models import CustomUser, BusinessProfile, SearchHistory, Festival, PosterGeneration, UserHistory
+from .models import CustomUser, BusinessProfile, SearchHistory, Festival, PosterGeneration, UserHistory, TwoFactorAuth
 from .email_utils import send_verification_email, send_festival_notifications, is_token_valid
 from .cloudinary_utils import upload_image_to_cloudinary, optimize_image_for_cloudinary
 # --- MODIFICATION: Using the old 'preview' library as requested ---
@@ -180,8 +182,9 @@ def login_view(request):
                 password=form.cleaned_data['password']
             )
             if user:
-                login(request, user)
-                return redirect('dashboard')
+                # Stage user for 2FA verification before completing login
+                request.session['pre_2fa_user_id'] = user.id
+                return redirect('two_factor')
             else:
                 messages.error(request, "Invalid username or password.")
     else:
@@ -192,6 +195,72 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('home')
+
+
+def two_factor_view(request):
+    """Handle TOTP 2FA: show QR on first setup and verify codes on every login."""
+    if request.user.is_authenticated:
+        return redirect('dashboard')
+
+    user_id = request.session.get('pre_2fa_user_id')
+    if not user_id:
+        return redirect('login')
+
+    try:
+        user = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        messages.error(request, "Session expired. Please login again.")
+        return redirect('login')
+
+    # Get or create 2FA record
+    tfa, _created = TwoFactorAuth.objects.get_or_create(user=user)
+    # Generate a secret if missing, but keep showing QR until enabled
+    if not tfa.secret:
+        tfa.secret = pyotp.random_base32()
+        tfa.enabled = False
+        tfa.save()
+    show_qr = not tfa.enabled
+
+    totp = pyotp.TOTP(tfa.secret)
+    issuer = 'ParlorPal'
+    account_name = user.email or user.username
+    provisioning_uri = totp.provisioning_uri(name=account_name, issuer_name=issuer)
+    # Use QuickChart for QR (more reliable in some networks)
+    qr_url = f"https://quickchart.io/qr?text={quote(provisioning_uri)}&size=200&margin=2"
+
+    if request.method == 'POST':
+        code = request.POST.get('code', '').strip()
+        if not code:
+            messages.error(request, 'Please enter the 6-digit code from your authenticator app.')
+        else:
+            if totp.verify(code, valid_window=1):
+                # Mark enabled if first time
+                if not tfa.enabled:
+                    from django.utils import timezone
+                    tfa.enabled = True
+                    tfa.last_verified_at = timezone.now()
+                    tfa.save()
+
+                # Complete login now
+                login(request, user)
+                try:
+                    del request.session['pre_2fa_user_id']
+                except KeyError:
+                    pass
+                return redirect('dashboard')
+            else:
+                messages.error(request, 'Invalid code. Please try again.')
+
+    context = {
+        'user_obj': user,
+        'show_qr': show_qr,
+        'qr_url': qr_url,
+        'issuer': issuer,
+        'account_name': account_name,
+        'secret': tfa.secret,
+        'provisioning_uri': provisioning_uri,
+    }
+    return render(request, 'core/two_factor.html', context)
 
 @login_required
 def dashboard_view(request):

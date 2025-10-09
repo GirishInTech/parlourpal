@@ -149,3 +149,14 @@ class UserHistory(models.Model):
     def is_text_action(self):
         """Check if this action involves text generation"""
         return self.action_type == 'text_generation'
+
+# 2FA model to store TOTP secret per user
+class TwoFactorAuth(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='twofactor')
+    secret = models.CharField(max_length=64, blank=True, help_text="Base32 TOTP secret")
+    enabled = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_verified_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"2FA for {self.user.username} ({'enabled' if self.enabled else 'disabled'})"
