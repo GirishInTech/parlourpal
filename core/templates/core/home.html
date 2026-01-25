@@ -490,6 +490,181 @@
         }
     }
 
+    /* Dark Mode Styles for Home Page */
+    .dark-mode .hero {
+        background: linear-gradient(135deg, #0f0f1e, #1e1e2e);
+    }
+
+    .dark-mode .hero::before {
+        background: 
+            radial-gradient(circle at 20% 80%, rgba(197, 168, 255, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(157, 140, 255, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(197, 168, 255, 0.1) 0%, transparent 50%);
+    }
+
+    .dark-mode .hero-title {
+        background: linear-gradient(135deg, #ffffff, #C5A8FF);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .dark-mode .hero-subtitle {
+        color: #d4d4d8;
+    }
+
+    .dark-mode .hero-btn-primary {
+        background: linear-gradient(135deg, #C5A8FF, #9D8CFF);
+        box-shadow: 0 10px 30px rgba(197, 168, 255, 0.4);
+        color: #000000;
+        font-weight: 600;
+    }
+
+    .dark-mode .hero-btn-primary:hover {
+        box-shadow: 0 15px 40px rgba(197, 168, 255, 0.5);
+        color: #000000;
+    }
+
+    .dark-mode .hero-btn-outline {
+        color: #C5A8FF;
+        border-color: #C5A8FF;
+    }
+
+    .dark-mode .hero-btn-outline:hover {
+        background: #C5A8FF;
+        color: #000000;
+        font-weight: 600;
+    }
+
+    .dark-mode .hero-image {
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    }
+
+    .dark-mode .hero-image:hover {
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+    }
+
+    .dark-mode .features-section {
+        background: #0f0f1e;
+    }
+
+    .dark-mode .section-title {
+        color: #ffffff;
+        background: linear-gradient(135deg, #ffffff, #C5A8FF);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .dark-mode .section-subtitle {
+        color: #d4d4d8;
+    }
+
+    .dark-mode .feature-card {
+        background: #1e1e2e;
+        border-color: #3a3a4a;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .dark-mode .feature-card:hover {
+        background: #252536;
+        box-shadow: 0 25px 60px rgba(197, 168, 255, 0.3);
+    }
+
+    .dark-mode .feature-icon {
+        background: linear-gradient(135deg, #C5A8FF, #9D8CFF);
+    }
+
+    .dark-mode .feature-title {
+        color: #ffffff;
+    }
+
+    .dark-mode .feature-description {
+        color: #d4d4d8;
+    }
+
+    .dark-mode .how-it-works {
+        background: linear-gradient(135deg, #1e1e2e, rgba(197, 168, 255, 0.05));
+    }
+
+    .dark-mode .step-card {
+        background: #1e1e2e;
+        border-color: #3a3a4a;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .dark-mode .step-card:hover {
+        background: #252536;
+        box-shadow: 0 25px 60px rgba(197, 168, 255, 0.3);
+    }
+
+    .dark-mode .step-number {
+        background: linear-gradient(135deg, #C5A8FF, #9D8CFF);
+        color: #000000;
+        font-weight: 800;
+    }
+
+    .dark-mode .step-title {
+        color: #ffffff;
+    }
+
+    .dark-mode .step-description {
+        color: #d4d4d8;
+    }
+
+    .dark-mode .testimonial-section {
+        background: #0f0f1e;
+    }
+
+    .dark-mode .testimonial-card {
+        background: #1e1e2e;
+        border-left-color: #C5A8FF;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .dark-mode .testimonial-card:hover {
+        background: #252536;
+        box-shadow: 0 20px 50px rgba(197, 168, 255, 0.3);
+    }
+
+    .dark-mode .testimonial-card::before {
+        color: #C5A8FF;
+    }
+
+    .dark-mode .testimonial-text {
+        color: #ffffff;
+    }
+
+    .dark-mode .testimonial-author {
+        color: #C5A8FF;
+    }
+
+    .dark-mode .testimonial-role {
+        color: #d4d4d8;
+    }
+
+    .dark-mode .cta-section {
+        background: linear-gradient(135deg, #2d2650, #1a1a35);
+    }
+
+    .dark-mode .cta-title {
+        color: #ffffff;
+    }
+
+    .dark-mode .cta-subtitle {
+        color: #d4d4d8;
+    }
+
+    .dark-mode .cta-btn-primary {
+        background: white;
+        color: #2d2650;
+        font-weight: 600;
+    }
+
+    .dark-mode .cta-btn-primary:hover {
+        color: #2d2650;
+    }
+
     @media (max-width: 576px) {
         .hero-title {
             font-size: 2.5rem;
@@ -719,6 +894,6 @@
             const speed = scrolled * 0.5;
             parallax.style.transform = `translateY(${speed}px)`;
         }
-});
+    });
 </script>
 {% endblock %}

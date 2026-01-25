@@ -33,6 +33,7 @@ certifi
 google-cloud-aiplatform
 google-auth
 google-api-core
+google-generativeai
 
 # AI/ML dependencies
 pydantic

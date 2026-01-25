@@ -3,3 +3,21 @@ __pycache__/
 *.pyc
 /media/
 secrets/
+
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Django
+db.sqlite3
+*.log
+
+# Env
+.env
+
+# OS
+.DS_Store
+Thumbs.db

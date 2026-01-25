@@ -24,6 +24,10 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
+    <!-- Global Dark Mode Toggle Button -->
+    <button class="dark-mode-toggle" id="darkModeToggle" title="Toggle Dark Mode">
+        <i class="bi bi-moon-stars-fill" id="darkModeIcon"></i>
+    </button>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light fixed-top custom-navbar">
         <div class="container">
@@ -61,14 +65,10 @@
                                 <li><a class="dropdown-item {% if request.resolver_match.url_name == 'email_subjects' %}active{% endif %}" href="{% url 'email_subjects' %}"><i class="bi bi-envelope me-1"></i>Email Subject Line Generator</a></li>
                             </ul>
                         </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="mediaDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Generate Media
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'generate_poster' %}active{% endif %}" href="{% url 'generate_poster' %}">
+                                <i class="bi bi-image me-1"></i>Generate Poster
                             </a>
-                            <ul class="dropdown-menu" aria-labelledby="mediaDropdown">
-                                <li><a class="dropdown-item" href="{% url 'generate_poster' %}">Generate Poster</a></li>
-                                <li><a class="dropdown-item" href="{% url 'generate_video' %}">Generate Video</a></li>
-                            </ul>
                         </li>
 
                         <!-- Admin Tools -->
@@ -346,6 +346,51 @@
     
     <!-- Custom JavaScript -->
     <script src="{% static 'core/script.js' %}"></script>
+    
+    <!-- Global Dark Mode Toggle Script -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const darkModeIcon = document.getElementById('darkModeIcon');
+        const body = document.body;
+        
+        if (darkModeToggle && darkModeIcon) {
+            // Check for saved dark mode preference
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            
+            // Apply saved preference
+            if (isDarkMode) {
+                body.classList.add('dark-mode');
+                darkModeIcon.classList.remove('bi-moon-stars-fill');
+                darkModeIcon.classList.add('bi-sun-fill');
+            }
+            
+            // Toggle dark mode on button click
+            darkModeToggle.addEventListener('click', function() {
+                body.classList.toggle('dark-mode');
+                const isNowDark = body.classList.contains('dark-mode');
+                
+                // Update icon
+                if (isNowDark) {
+                    darkModeIcon.classList.remove('bi-moon-stars-fill');
+                    darkModeIcon.classList.add('bi-sun-fill');
+                } else {
+                    darkModeIcon.classList.remove('bi-sun-fill');
+                    darkModeIcon.classList.add('bi-moon-stars-fill');
+                }
+                
+                // Save preference
+                localStorage.setItem('darkMode', isNowDark);
+                
+                // Add animation
+                darkModeToggle.style.transform = 'rotate(360deg) scale(1.2)';
+                setTimeout(() => {
+                    darkModeToggle.style.transform = '';
+                }, 300);
+            });
+        }
+    });
+    </script>
     
     {% block extra_js %}{% endblock %}
 </body>
