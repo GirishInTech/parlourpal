@@ -19,7 +19,6 @@ import google.api_core.exceptions
 import cloudinary.uploader
 from PIL import Image, ImageDraw, ImageFont
 from dotenv import load_dotenv
-import pyotp
 
 # Django Imports
 from django.shortcuts import render, redirect
@@ -35,7 +34,7 @@ from django.views.decorators.http import require_POST
 
 # Local Application Imports
 from .forms import RegisterForm, LoginForm, BusinessProfileForm
-from .models import CustomUser, BusinessProfile, SearchHistory, Festival, PosterGeneration, UserHistory, TwoFactorAuth
+from .models import CustomUser, BusinessProfile, SearchHistory, Festival, PosterGeneration, UserHistory
 from .email_utils import send_verification_email, send_festival_notifications, is_token_valid
 from .cloudinary_utils import upload_image_to_cloudinary, optimize_image_for_cloudinary
 # --- MODIFICATION: Using the old 'preview' library as requested ---
