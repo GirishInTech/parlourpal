@@ -128,7 +128,9 @@ WSGI_APPLICATION = "parlorpal.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+import dj_database_url
 
+# SQLite Database (Primary)
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -136,13 +138,13 @@ DATABASES = {
     }
 }
 
-
-
+# Supabase PostgreSQL (Available for future migration)
 # DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.sqlite3",
-#         "NAME": BASE_DIR / "db.sqlite3",
-#     }
+#     "default": dj_database_url.config(
+#         default=os.getenv("SUPABASE_DB_CONNECTION_STRING"),
+#         conn_max_age=600,
+#         conn_health_checks=True,
+#     )
 # }
 
 
