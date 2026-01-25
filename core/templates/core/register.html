@@ -266,16 +266,10 @@
                     <form method="POST" class="auth-form" id="register_form" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
 
-                        {% if user_form.non_field_errors %}
+                        {% if form.non_field_errors %}
                             <div class="alert alert-danger">
                                 <i class="bi bi-exclamation-triangle me-2"></i>
-                                {{ user_form.non_field_errors }}
-                            </div>
-                        {% endif %}
-                        {% if profile_form.non_field_errors %}
-                            <div class="alert alert-danger">
-                                <i class="bi bi-exclamation-triangle me-2"></i>
-                                {{ profile_form.non_field_errors }}
+                                {{ form.non_field_errors }}
                             </div>
                         {% endif %}
 
@@ -298,13 +292,13 @@
                                                class="form-control"
                                                id="username"
                                                name="username"
-                                               value="{{ user_form.username.value|default_if_none:'' }}"
+                                               value="{{ form.username.value|default_if_none:'' }}"
                                                placeholder="Choose a username"
                                                required>
                                     </div>
-                                    {% if user_form.username.errors %}
+                                    {% if form.username.errors %}
                                         <div class="text-danger small mt-1">
-                                            {% for error in user_form.username.errors %}
+                                            {% for error in form.username.errors %}
                                                 <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
                                             {% endfor %}
                                         </div>
@@ -323,13 +317,13 @@
                                                class="form-control"
                                                id="email"
                                                name="email"
-                                               value="{{ user_form.email.value|default_if_none:'' }}"
+                                               value="{{ form.email.value|default_if_none:'' }}"
                                                placeholder="your@email.com"
                                                required>
                                     </div>
-                                    {% if user_form.email.errors %}
+                                    {% if form.email.errors %}
                                         <div class="text-danger small mt-1">
-                                            {% for error in user_form.email.errors %}
+                                            {% for error in form.email.errors %}
                                                 <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
                                             {% endfor %}
                                         </div>
@@ -353,9 +347,9 @@
                                                placeholder="Create a password"
                                                required>
                                     </div>
-                                    {% if user_form.password1.errors %}
+                                    {% if form.password1.errors %}
                                         <div class="text-danger small mt-1">
-                                            {% for error in user_form.password1.errors %}
+                                            {% for error in form.password1.errors %}
                                                 <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
                                             {% endfor %}
                                         </div>
@@ -377,9 +371,9 @@
                                                placeholder="Confirm your password"
                                                required>
                                     </div>
-                                    {% if user_form.password2.errors %}
+                                    {% if form.password2.errors %}
                                         <div class="text-danger small mt-1">
-                                            {% for error in user_form.password2.errors %}
+                                            {% for error in form.password2.errors %}
                                                 <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
                                             {% endfor %}
                                         </div>
@@ -406,57 +400,178 @@
                                            class="form-control"
                                            id="businessName"
                                            name="business_name"
-                                           value="{{ profile_form.business_name.value|default_if_none:'' }}"
-                                           placeholder="e.g., TechFix Mobile Solutions"
-                                           required>
+                                           value="{{ form.business_name.value|default_if_none:'' }}"
+                                           placeholder="e.g., TechFix Mobile Solutions">
                                 </div>
-                                {% if profile_form.business_name.errors %}
+                                {% if form.business_name.errors %}
                                     <div class="text-danger small mt-1">
-                                        {% for error in profile_form.business_name.errors %}
+                                        {% for error in form.business_name.errors %}
                                             <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
                                         {% endfor %}
                                     </div>
                                 {% endif %}
                             </div>
 
+                            <!-- Location Section -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="country" class="form-label">
+                                        <i class="bi bi-globe me-1"></i>Country
+                                    </label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="country"
+                                           name="country"
+                                           value="{{ form.country.value|default_if_none:'' }}"
+                                           placeholder="Enter country">
+                                    {% if form.country.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.country.errors %}
+                                                <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="state" class="form-label">
+                                        <i class="bi bi-map me-1"></i>State/Province
+                                    </label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="state"
+                                           name="state"
+                                           value="{{ form.state.value|default_if_none:'' }}"
+                                           placeholder="Enter state/province">
+                                    {% if form.state.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.state.errors %}
+                                                <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="district" class="form-label">
+                                        <i class="bi bi-signpost me-1"></i>District
+                                    </label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="district"
+                                           name="district"
+                                           value="{{ form.district.value|default_if_none:'' }}"
+                                           placeholder="Enter district">
+                                    {% if form.district.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.district.errors %}
+                                                <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="town" class="form-label">
+                                        <i class="bi bi-geo-alt me-1"></i>Town/City
+                                    </label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="town"
+                                           name="town"
+                                           value="{{ form.town.value|default_if_none:'' }}"
+                                           placeholder="Enter town/city">
+                                    {% if form.town.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.town.errors %}
+                                                <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
                             <div class="mb-3">
-                                <label for="businessDescription" class="form-label">
-                                    <i class="bi bi-info-circle me-1"></i>Business Description
+                                <label for="address" class="form-label">
+                                    <i class="bi bi-house me-1"></i>Complete Address
                                 </label>
                                 <textarea class="form-control"
-                                          id="businessDescription"
-                                          name="description"
-                                          rows="3"
-                                          placeholder="Tell us about your business... What services do you offer? What makes you special?"
-                                          required>{{ profile_form.description.value|default_if_none:'' }}</textarea>
-                                {% if profile_form.description.errors %}
+                                          id="address"
+                                          name="address"
+                                          rows="2"
+                                          placeholder="Street, Building, Floor, etc.">{{ form.address.value|default_if_none:'' }}</textarea>
+                                {% if form.address.errors %}
                                     <div class="text-danger small mt-1">
-                                        {% for error in profile_form.description.errors %}
+                                        {% for error in form.address.errors %}
                                             <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
                                         {% endfor %}
                                     </div>
                                 {% endif %}
                             </div>
 
+                            <!-- Contact Information -->
                             <div class="mb-3">
-                                <label for="businessImage" class="form-label">
-                                    <i class="bi bi-image me-1"></i>Business Logo/Image
+                                <label for="phone" class="form-label">
+                                    <i class="bi bi-telephone me-1"></i>Contact Phone
                                 </label>
-                                <input type="file"
-                                       class="form-control"
-                                       id="businessImage"
-                                       name="image"
-                                       accept="image/*">
-                                {% if profile_form.image.errors %}
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-telephone"></i>
+                                    </span>
+                                    <input type="tel"
+                                           class="form-control"
+                                           id="phone"
+                                           name="phone"
+                                           value="{{ form.phone.value|default_if_none:'' }}"
+                                           placeholder="+1 234 567 8900">
+                                </div>
+                                {% if form.phone.errors %}
                                     <div class="text-danger small mt-1">
-                                        {% for error in profile_form.image.errors %}
+                                        {% for error in form.phone.errors %}
                                             <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
                                         {% endfor %}
                                     </div>
                                 {% endif %}
-                                <div class="form-text">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Upload your business logo or a photo (optional)
+                            </div>
+
+                            <!-- Business Hours -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="business_hours_start" class="form-label">
+                                        <i class="bi bi-clock me-1"></i>Opening Time
+                                    </label>
+                                    <input type="time"
+                                           class="form-control"
+                                           id="business_hours_start"
+                                           name="business_hours_start"
+                                           value="{{ form.business_hours_start.value|default_if_none:'' }}">
+                                    {% if form.business_hours_start.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.business_hours_start.errors %}
+                                                <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="business_hours_end" class="form-label">
+                                        <i class="bi bi-clock-fill me-1"></i>Closing Time
+                                    </label>
+                                    <input type="time"
+                                           class="form-control"
+                                           id="business_hours_end"
+                                           name="business_hours_end"
+                                           value="{{ form.business_hours_end.value|default_if_none:'' }}">
+                                    {% if form.business_hours_end.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.business_hours_end.errors %}
+                                                <i class="bi bi-exclamation-triangle me-1"></i>{{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>

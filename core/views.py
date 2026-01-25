@@ -41,6 +41,9 @@ from .cloudinary_utils import upload_image_to_cloudinary, optimize_image_for_clo
 from vertexai.preview.vision_models import ImageGenerationModel
 import google.generativeai as genai
 from vertexai.language_models import TextGenerationModel
+# --- NEW: Gemini 3 Pro Image (Nano Banana) for better text rendering ---
+from google import genai as google_genai
+from google.genai import types
 
 
 # -----------------
@@ -99,10 +102,13 @@ try:
         # Imagen_Model = "imagen-4.0-fast-generate-preview-06-06"
 
         # The highest quality model in the family, best for complex prompts, high detail, and accurate text rendering.
-        Imagen_Model = "imagen-4.0-ultra-generate-preview-06-06"
+        # Imagen_Model = "imagen-4.0-ultra-generate-preview-06-06"
 
-        #Unlike standard Imagen, this model has "reasoning" capabilities. It understands that "Yugadi" isn't just a text string; it implies festivity, leaves, green, yellow, traditional vibes.
-        # Imagen_Model = "gemini-3-pro-image-preview"
+
+        # NOTE: We are now using Gemini 3 Pro Image (Nano Banana) via the generate_poster_gemini_3() function
+        # This old Vertex AI initialization is kept for backwards compatibility but not actively used
+        # Gemini 3 Pro Image is NOT available via ImageGenerationModel - it requires the google.genai library
+        Imagen_Model = "imagen-4.0-ultra-generate-preview-06-06"  # Keep using Imagen as fallback
 
 
         imagen_model_preview = ImageGenerationModel.from_pretrained(Imagen_Model)
@@ -123,18 +129,70 @@ except Exception as e:
     imagen_model_preview = None
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+# -----------------
+# 2B. GEMINI 3 PRO IMAGE INITIALIZATION (NANO BANANA)
+# -----------------
+def generate_poster_gemini_3(user_prompt):
+    """
+    Generates a poster using Gemini 3 Pro Image (Nano Banana).
+    This model handles TEXT and EMOTIONS much better than Imagen.
+    
+    Args:
+        user_prompt: The detailed prompt for poster generation
+        
+    Returns:
+        PIL Image object if successful, None otherwise
+    """
+    try:
+        # 1. Initialize the Client (different from Vertex AI)
+        if not settings.GOOGLE_API_KEY:
+            print("ERROR: GOOGLE_API_KEY not configured in settings.py")
+            return None
+            
+        client = google_genai.Client(api_key=settings.GOOGLE_API_KEY)
+        
+        # 2. Define the Model ID (This is Nano Banana Pro)
+        model_id = "gemini-3-pro-image-preview"
+        
+        # 3. Create a config to ensure high quality (simplified config)
+        config = types.GenerateContentConfig(
+            response_modalities=['IMAGE']  # Request an image back
+        )
+        
+        print(f"DEBUG: Sending prompt to {model_id} (Nano Banana)...")
+        
+        # 4. Generate content
+        response = client.models.generate_content(
+            model=model_id,
+            contents=[user_prompt],
+            config=config
+        )
+        
+        print(f"DEBUG: Received response from Gemini 3 Pro Image")
+        
+        # 5. Extract the Image - EXACT same logic as working test script
+        if hasattr(response, 'candidates') and response.candidates:
+            for candidate in response.candidates:
+                if hasattr(candidate, 'content') and candidate.content:
+                    content = candidate.content
+                    if hasattr(content, 'parts') and content.parts:
+                        for part in content.parts:
+                            if hasattr(part, 'inline_data') and part.inline_data:
+                                if hasattr(part.inline_data, 'data'):
+                                    # Data is already raw binary (not base64)
+                                    image_data = part.inline_data.data
+                                    pil_image = Image.open(BytesIO(image_data))
+                                    print(f"DEBUG: Successfully extracted PIL Image")
+                                    print(f"DEBUG: Image size: {pil_image.size}")
+                                    return pil_image
+        
+        print("WARNING: No image found in Gemini 3 Pro response")
+        return None
+        
+    except Exception as e:
+        print(f"ERROR: Gemini 3 Pro Image generation failed: {e}")
+        print(f"DEBUG: Full error traceback: {traceback.format_exc()}")
+        return None
 
 
 # -----------------
@@ -147,17 +205,20 @@ def home_view(request):
 def register_view(request):
     if request.method == 'POST':
         user_form = RegisterForm(request.POST)
-        profile_form = BusinessProfileForm(request.POST, request.FILES)
-        if user_form.is_valid() and profile_form.is_valid():
+        if user_form.is_valid():
             with transaction.atomic():
                 user = user_form.save()
-                # Do NOT create BusinessProfile here; the signal will do it!
-                # Optionally, update the profile with extra fields from the form:
+                # Update the business profile (created by signal) with form data
                 profile = user.businessprofile
-                for field in ['business_name', 'description', 'image', 'image_url', 'location', 'phone', 'timing']:
-                    value = profile_form.cleaned_data.get(field)
-                    if value:
-                        setattr(profile, field, value)
+                profile.business_name = user_form.cleaned_data.get('business_name') or f"{user.username}'s Business"
+                profile.country = user_form.cleaned_data.get('country', '')
+                profile.state = user_form.cleaned_data.get('state', '')
+                profile.district = user_form.cleaned_data.get('district', '')
+                profile.town = user_form.cleaned_data.get('town', '')
+                profile.address = user_form.cleaned_data.get('address', '')
+                profile.phone = user_form.cleaned_data.get('phone', '')
+                profile.business_hours_start = user_form.cleaned_data.get('business_hours_start')
+                profile.business_hours_end = user_form.cleaned_data.get('business_hours_end')
                 profile.save()
             # Send verification email
             if send_verification_email(user):
@@ -169,11 +230,9 @@ def register_view(request):
             messages.error(request, "Please correct the errors below.")
     else:
         user_form = RegisterForm()
-        profile_form = BusinessProfileForm()
 
     return render(request, 'core/register.html', {
-        'user_form': user_form,
-        'profile_form': profile_form
+        'form': user_form
     })
 
 def login_view(request):
@@ -341,10 +400,19 @@ def ai_suggestions_view(request):
         
         token_map = {"small": 100, "medium": 200, "long": 300}
         max_tokens = token_map.get(length, 100)
+        # Get location details
+        location_parts = []
+        if profile.town:
+            location_parts.append(profile.town)
+        if profile.state:
+            location_parts.append(profile.state)
+        location_str = ", ".join(location_parts) if location_parts else "your area"
+        
         prompt = f"""Task: Output only a funny and engaging social media caption for a business named {profile.business_name}.
 Language: {language}
 Business Name: {profile.business_name}
 Services: {profile.description}
+Location: {location_str}
 Focus: {user_input}
 Instructions: Use at least 4 relevant emojis. Output only the caption text."""
         try:
@@ -556,8 +624,8 @@ def profile_view(request):
 @login_required
 def poster_generator_view(request):
     """
-    Handles poster generation using the OLD 'preview' Vertex AI library.
-    WARNING: This is for testing only and is not the recommended approach.
+    Handles poster generation using Gemini 3 Pro Image (Nano Banana).
+    This model has better text rendering and emotional understanding than Imagen.
     """
     try:
         profile = BusinessProfile.objects.get(user=request.user)
@@ -566,11 +634,17 @@ def poster_generator_view(request):
         return redirect('dashboard')
 
     poster_url = None
+    
+    # Always load the most recent poster for this user (in case of timeout/broken pipe)
+    latest_poster = PosterGeneration.objects.filter(user=request.user).order_by('-id').first()
+    if latest_poster:
+        poster_url = latest_poster.poster_url
+        print(f"DEBUG: Loaded latest poster from DB: {poster_url}")
 
     if request.method == 'POST':
-        # Check if imagen_model_preview is available
-        if 'imagen_model_preview' not in globals() or imagen_model_preview is None:
-            messages.error(request, "Poster generation is currently unavailable due to a configuration error. Please contact support.")
+        # Check if GOOGLE_API_KEY is configured
+        if not settings.GOOGLE_API_KEY:
+            messages.error(request, "Poster generation is currently unavailable. Please configure GOOGLE_API_KEY in your .env file.")
             return redirect('dashboard')
         promotion_name = request.POST.get("promotion_name", "").strip()
         offer_type = request.POST.get("offer_type")
@@ -585,9 +659,30 @@ def poster_generator_view(request):
             # Extract key business details for marketing
             business_name = profile.business_name
             business_type = profile.description.split('.')[0] if profile.description else "Business"
-            location = profile.location if hasattr(profile, 'location') and profile.location else "Your Location"
-            phone = profile.phone if hasattr(profile, 'phone') and profile.phone else "Your Phone"
-            timing = profile.timing if hasattr(profile, 'timing') and profile.timing else "9:00 AM - 8:00 PM"
+            
+            # Build location string from detailed fields
+            location_parts = []
+            if profile.town:
+                location_parts.append(profile.town)
+            if profile.district:
+                location_parts.append(profile.district)
+            if profile.state:
+                location_parts.append(profile.state)
+            if profile.country:
+                location_parts.append(profile.country)
+            location = ", ".join(location_parts) if location_parts else "Your Location"
+            
+            # Add detailed address if available
+            if profile.address:
+                location = f"{profile.address}, {location}"
+            
+            phone = profile.phone if profile.phone else "Your Phone"
+            
+            # Format business hours
+            if profile.business_hours_start and profile.business_hours_end:
+                timing = f"{profile.business_hours_start.strftime('%I:%M %p')} - {profile.business_hours_end.strftime('%I:%M %p')}"
+            else:
+                timing = "9:00 AM - 8:00 PM"
             
             prompt_text = f"""
             You are a creative director. Include emotional, atmospheric, and cultural details relevant to the promotion theme (e.g., festivals, seasons , etc). Keep the business details exact, but describe the visuals vividly.
@@ -629,38 +724,34 @@ POSTER GOAL:
             
             print(prompt_text)
             try:
-                print(f"DEBUG: About to generate image with prompt: {prompt_text}")
-                # --- MODIFICATION: Calling the old model's 'generate_images' method ---
-                response = imagen_model_preview.generate_images(
-                    prompt=prompt_text,
-                    number_of_images=1,
-                )
-
-                print(f"DEBUG: Response: {response}")
-                print(f"DEBUG: Response type: {type(response)}")
-                print(f"DEBUG: Response attributes: {dir(response)}")
-
-                # Check if response has images
-                if hasattr(response, 'images') and response.images:
-                    # Get the first image
-                    image = response.images[0]
-                    print(f"DEBUG: Got image: {image}")
+                print(f"DEBUG: About to generate image with Gemini 3 Pro Image (Nano Banana)")
+                
+                # --- NEW: Using Gemini 3 Pro Image (Nano Banana) for better text rendering ---
+                pil_image = generate_poster_gemini_3(prompt_text)
+                
+                if pil_image:
+                    print(f"DEBUG: Successfully generated PIL Image")
                     
-                    # Save the image
+                    # Convert PIL Image to bytes
+                    img_byte_arr = BytesIO()
+                    pil_image.save(img_byte_arr, format='PNG')
+                    image_bytes = img_byte_arr.getvalue()
+                    
+                    # Save the image locally
                     filename = f"{uuid.uuid4()}.png"
                     save_path = os.path.join(settings.MEDIA_ROOT, filename)
                     print(f"DEBUG: Attempting to save to: {save_path}")
                     
                     # Save the image bytes
                     with open(save_path, 'wb') as f:
-                        f.write(image._image_bytes)
+                        f.write(image_bytes)
                     
                     print(f"DEBUG: Image saved successfully")
 
                     # Upload to Cloudinary
                     print("DEBUG: Uploading to Cloudinary...")
                     cloudinary_result = upload_image_to_cloudinary(
-                        image._image_bytes,
+                        image_bytes,
                         folder="posters",
                         public_id=f"poster_{request.user.username}_{uuid.uuid4().hex[:8]}"
                     )
@@ -694,7 +785,8 @@ POSTER GOAL:
                             prompt_used=prompt_text
                         )
                         
-                        messages.success(request, "Poster generated successfully and uploaded to Cloudinary!")
+                        print(f"DEBUG: About to return response with poster_url = {poster_url}")
+                        messages.success(request, "🎉 Poster generated successfully! Check below.")
                     else:
                         print(f"DEBUG: Cloudinary upload failed: {cloudinary_result['error']}")
                         # Fallback to local storage
@@ -707,8 +799,7 @@ POSTER GOAL:
                         )
                         messages.warning(request, "Poster generated but Cloudinary upload failed. Using local storage.")
                 else:
-                    print(f"DEBUG: No images in response")
-                    print(f"DEBUG: Response.images: {getattr(response, 'images', 'No images attribute')}")
+                    print(f"DEBUG: Gemini 3 Pro Image failed to generate an image")
                     messages.warning(request, "Image could not be generated (it may have been blocked by safety filters).")
 
             except google.api_core.exceptions.ResourceExhausted as e:
@@ -718,6 +809,11 @@ POSTER GOAL:
             except Exception as e:
                 messages.error(request, f"An unexpected error occurred: {e}")
                 print(f"General Error: {e}")
+                import traceback
+                print(f"DEBUG: Full traceback: {traceback.format_exc()}")
+        
+        # Redirect after POST to prevent resubmission on refresh
+        return redirect('poster_generator')
 
     context = {
         'profile': profile,
@@ -921,9 +1017,23 @@ def chatbot_view(request):
         profile = BusinessProfile.objects.filter(user=request.user).first()
         business_name = profile.business_name if profile and profile.business_name else "(not set)"
         description = profile.description if profile and profile.description else "(not set)"
-        location = profile.location if profile and profile.location else "(not set)"
+        
+        # Location details
+        country = profile.country if profile and profile.country else "(not set)"
+        state = profile.state if profile and profile.state else "(not set)"
+        district = profile.district if profile and profile.district else "(not set)"
+        town = profile.town if profile and profile.town else "(not set)"
+        address = profile.address if profile and profile.address else "(not set)"
+        full_location = f"{town}, {district}, {state}, {country}" if all([town, district, state, country]) else "(not set)"
+        
         phone = profile.phone if profile and profile.phone else "(not set)"
-        timing = profile.timing if profile and profile.timing else "(not set)"
+        
+        # Business hours
+        if profile and profile.business_hours_start and profile.business_hours_end:
+            timing = f"{profile.business_hours_start.strftime('%I:%M %p')} - {profile.business_hours_end.strftime('%I:%M %p')}"
+        else:
+            timing = "(not set)"
+        
         email = request.user.email if hasattr(request.user, 'email') else "(not set)"
 
         # Recent posters
@@ -955,9 +1065,9 @@ def chatbot_view(request):
             "You are ParlorPal’s AI assistant. Here is the user’s business profile and recent activity to help you answer their questions as a helpful, friendly, and knowledgeable assistant.\n"
             f"Business Name: {business_name}\n"
             f"Description: {description}\n"
-            f"Location: {location}\n"
+            f"Location: {full_location}\n" + f"Detailed Address: {address}\n"
             f"Phone: {phone}\n"
-            f"Hours: {timing}\n"
+            f"Business Hours: {timing}\n"
             f"Email: {email}\n"
             f"Recent Posters: {poster_str}\n"
             f"Captions Generated: {caption_count}\n"
@@ -1127,3 +1237,4 @@ def generate_video_view(request):
         'video_url': video_url,
         'error': error
     })
+

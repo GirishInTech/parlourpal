@@ -5,6 +5,56 @@
 
 {% block extra_css %}
 <style>
+    /* Loading Overlay */
+    #loadingOverlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+    
+    #loadingOverlay.show {
+        display: flex;
+    }
+    
+    .loading-content {
+        text-align: center;
+        color: white;
+    }
+    
+    .loading-spinner {
+        width: 80px;
+        height: 80px;
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #A88BEB;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 20px;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .loading-text {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+    
+    .loading-subtext {
+        font-size: 1rem;
+        opacity: 0.8;
+    }
+
     .poster-container {
         padding: 2rem 0;
         background: linear-gradient(135deg, var(--bg-light), var(--white));
@@ -160,7 +210,7 @@
     .download-btn {
         background: var(--primary-color);
         border: none;
-        color: var(--white);
+        color: #ffffff !important;
         padding: 0.75rem 1.5rem;
         border-radius: var(--border-radius);
         font-weight: 600;
@@ -173,8 +223,9 @@
 
     .download-btn:hover {
         background: var(--accent-color);
-        color: var(--white);
+        color: #ffffff !important;
         transform: translateY(-2px);
+        text-decoration: none;
     }
 
     .regenerate-btn {
@@ -269,6 +320,16 @@
 {% endblock %}
 
 {% block content %}
+<!-- Loading Overlay -->
+<div id="loadingOverlay">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">🎨 Generating Your Poster...</div>
+        <div class="loading-subtext">Using Gemini 3 Pro Image (Nano Banana) for perfect text rendering</div>
+        <div class="loading-subtext" style="margin-top: 10px;">⏱️ This may take 30-60 seconds. Please wait...</div>
+    </div>
+</div>
+
 <div class="poster-container">
     <div class="container">
         <!-- Header -->
@@ -465,7 +526,7 @@
                     <div class="result-header">
                         <h5 class="result-title">
                             <i class="bi bi-stars me-2"></i>
-                            Your Generated Poster
+                            Your Generated Poster (LATEST)
                         </h5>
                     </div>
                     <div class="result-content">
@@ -538,28 +599,40 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('posterForm');
     const submitButton = document.getElementById('generate_poster_btn');
-    const btnText = submitButton.querySelector('.btn-text');
-    const spinner = submitButton.querySelector('.spinner-border');
-    const loadingSection = document.getElementById('loadingSection');
+    const loadingOverlay = document.getElementById('loadingOverlay');
     const offerTypeSelect = document.getElementById('offer_type');
     const customOfferDiv = document.getElementById('custom_offer_div');
 
-    // Form submission handling
-    if (form) {
-        form.addEventListener('submit', function() {
-            // Disable button
-            submitButton.disabled = true;
+    // Always hide loading overlay on page load (in case of errors or back navigation)
+    loadingOverlay.classList.remove('show');
 
-            // Show spinner and change text
-            spinner.classList.remove('d-none');
-            btnText.textContent = 'Generating...';
+    // Form submission handling - Show loading overlay and prevent double submission
+    if (form) {
+        let isSubmitting = false;
+        
+        form.addEventListener('submit', function(e) {
+            // Prevent double submission
+            if (isSubmitting) {
+                e.preventDefault();
+                return false;
+            }
             
-            // Add loading class
-            submitButton.classList.add('btn-loading');
+            isSubmitting = true;
             
-            // Show loading section
-        loadingSection.style.display = 'block';
-    });
+            // Show loading overlay
+            loadingOverlay.classList.add('show');
+            
+            // Disable submit button
+            if (submitButton) {
+                submitButton.disabled = true;
+                const btnText = submitButton.querySelector('.btn-text');
+                const spinner = submitButton.querySelector('.spinner-border');
+                if (spinner) spinner.classList.remove('d-none');
+                if (btnText) btnText.textContent = 'Generating...';
+            }
+            
+            // Form will submit normally, page will reload with result
+        });
     }
 
     // Show/hide custom offer field

@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser, BusinessProfile
 
 class RegisterForm(UserCreationForm):
+    # User fields
     username = forms.CharField(
         widget=forms.TextInput(attrs={
             'class': 'form-control',
@@ -28,9 +29,102 @@ class RegisterForm(UserCreationForm):
         })
     )
     
+    # Business Profile fields
+    business_name = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your business name'
+        })
+    )
+    
+    # Location fields
+    country = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Country'
+        })
+    )
+    state = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'State/Province'
+        })
+    )
+    district = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'District'
+        })
+    )
+    town = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Town/City'
+        })
+    )
+    address = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 2,
+            'placeholder': 'Complete business address (street, building, etc.)'
+        })
+    )
+    
+    # Contact
+    phone = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Contact phone number'
+        })
+    )
+    
+    # Business hours
+    business_hours_start = forms.TimeField(
+        required=False,
+        widget=forms.TimeInput(attrs={
+            'class': 'form-control',
+            'type': 'time'
+        })
+    )
+    business_hours_end = forms.TimeField(
+        required=False,
+        widget=forms.TimeInput(attrs={
+            'class': 'form-control',
+            'type': 'time'
+        })
+    )
+    
     class Meta:
         model = CustomUser
         fields = ['username', 'email', 'password1', 'password2']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Remove all password validators - allow any 4+ character password
+        self.fields['password1'].help_text = None
+        self.fields['password2'].help_text = None
+        self.fields['password1'].validators = []
+        self.fields['password2'].validators = []
+    
+    def clean_password1(self):
+        password1 = self.cleaned_data.get('password1')
+        if len(password1) < 4:
+            raise forms.ValidationError("Password must be at least 4 characters long.")
+        return password1
+    
+    def clean_password2(self):
+        password1 = self.cleaned_data.get('password1')
+        password2 = self.cleaned_data.get('password2')
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError("Passwords don't match.")
+        return password2
 
 
 class LoginForm(forms.Form):
@@ -71,13 +165,46 @@ class BusinessProfileForm(forms.ModelForm):
             'placeholder': 'Describe your business, services, and what makes you unique...'
         })
     )
-    location = forms.CharField(
+    
+    # Location fields
+    country = forms.CharField(
         required=False,
         widget=forms.TextInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Enter your business address or location'
+            'placeholder': 'Country'
         })
     )
+    state = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'State/Province'
+        })
+    )
+    district = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'District'
+        })
+    )
+    town = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Town/City'
+        })
+    )
+    address = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 2,
+            'placeholder': 'Complete business address (street, building, etc.)'
+        })
+    )
+    
+    # Contact
     phone = forms.CharField(
         required=False,
         widget=forms.TextInput(attrs={
@@ -85,13 +212,23 @@ class BusinessProfileForm(forms.ModelForm):
             'placeholder': 'Enter your contact phone number'
         })
     )
-    timing = forms.CharField(
+    
+    # Business hours
+    business_hours_start = forms.TimeField(
         required=False,
-        widget=forms.TextInput(attrs={
+        widget=forms.TimeInput(attrs={
             'class': 'form-control',
-            'placeholder': 'e.g., 9:00 AM - 8:00 PM'
+            'type': 'time'
         })
     )
+    business_hours_end = forms.TimeField(
+        required=False,
+        widget=forms.TimeInput(attrs={
+            'class': 'form-control',
+            'type': 'time'
+        })
+    )
+    
     image = forms.ImageField(
         required=False,
         widget=forms.FileInput(attrs={
@@ -101,7 +238,8 @@ class BusinessProfileForm(forms.ModelForm):
     
     class Meta:
         model = BusinessProfile
-        fields = ['business_name', 'description', 'location', 'phone', 'timing', 'image']
+        fields = ['business_name', 'description', 'country', 'state', 'district', 'town', 
+                  'address', 'phone', 'business_hours_start', 'business_hours_end', 'image']
     
     def clean_email(self):
         """Custom validation for email field"""

@@ -113,42 +113,110 @@
                                         <div class="form-text">Describe your services and what makes your business special</div>
                                     </div>
                                     
+                                    <!-- Location Details -->
+                                    <h6 class="mt-4 mb-3"><i class="bi bi-geo-alt me-2"></i>Business Location</h6>
+                                    
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="mb-3">
-                                                <label for="{{ profile_form.location.id_for_label }}" class="form-label">
-                                                    <i class="bi bi-geo-alt me-1"></i>Business Location
+                                                <label for="{{ profile_form.country.id_for_label }}" class="form-label">
+                                                    <i class="bi bi-globe me-1"></i>Country
                                                 </label>
-                                                {{ profile_form.location }}
-                                                {% if profile_form.location.errors %}
-                                                    <div class="text-danger">{{ profile_form.location.errors }}</div>
+                                                {{ profile_form.country }}
+                                                {% if profile_form.country.errors %}
+                                                    <div class="text-danger">{{ profile_form.country.errors }}</div>
                                                 {% endif %}
-                                                <div class="form-text">Your business address or location</div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="mb-3">
-                                                <label for="{{ profile_form.phone.id_for_label }}" class="form-label">
-                                                    <i class="bi bi-telephone me-1"></i>Contact Phone
+                                                <label for="{{ profile_form.state.id_for_label }}" class="form-label">
+                                                    <i class="bi bi-map me-1"></i>State/Province
                                                 </label>
-                                                {{ profile_form.phone }}
-                                                {% if profile_form.phone.errors %}
-                                                    <div class="text-danger">{{ profile_form.phone.errors }}</div>
+                                                {{ profile_form.state }}
+                                                {% if profile_form.state.errors %}
+                                                    <div class="text-danger">{{ profile_form.state.errors }}</div>
                                                 {% endif %}
-                                                <div class="form-text">Your contact phone number</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ profile_form.district.id_for_label }}" class="form-label">
+                                                    <i class="bi bi-signpost me-1"></i>District
+                                                </label>
+                                                {{ profile_form.district }}
+                                                {% if profile_form.district.errors %}
+                                                    <div class="text-danger">{{ profile_form.district.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ profile_form.town.id_for_label }}" class="form-label">
+                                                    <i class="bi bi-geo-alt-fill me-1"></i>Town/City
+                                                </label>
+                                                {{ profile_form.town }}
+                                                {% if profile_form.town.errors %}
+                                                    <div class="text-danger">{{ profile_form.town.errors }}</div>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </div>
                                     
                                     <div class="mb-3">
-                                        <label for="{{ profile_form.timing.id_for_label }}" class="form-label">
-                                            <i class="bi bi-clock me-1"></i>Business Hours
+                                        <label for="{{ profile_form.address.id_for_label }}" class="form-label">
+                                            <i class="bi bi-house me-1"></i>Complete Address
                                         </label>
-                                        {{ profile_form.timing }}
-                                        {% if profile_form.timing.errors %}
-                                            <div class="text-danger">{{ profile_form.timing.errors }}</div>
+                                        {{ profile_form.address }}
+                                        {% if profile_form.address.errors %}
+                                            <div class="text-danger">{{ profile_form.address.errors }}</div>
                                         {% endif %}
-                                        <div class="form-text">Your business operating hours (e.g., 9:00 AM - 8:00 PM)</div>
+                                        <div class="form-text">Street, Building, Floor, etc.</div>
+                                    </div>
+                                    
+                                    <!-- Contact Information -->
+                                    <h6 class="mt-4 mb-3"><i class="bi bi-telephone me-2"></i>Contact Information</h6>
+                                    
+                                    <div class="mb-3">
+                                        <label for="{{ profile_form.phone.id_for_label }}" class="form-label">
+                                            <i class="bi bi-telephone me-1"></i>Contact Phone
+                                        </label>
+                                        {{ profile_form.phone }}
+                                        {% if profile_form.phone.errors %}
+                                            <div class="text-danger">{{ profile_form.phone.errors }}</div>
+                                        {% endif %}
+                                        <div class="form-text">Your contact phone number</div>
+                                    </div>
+                                    
+                                    <!-- Business Hours -->
+                                    <h6 class="mt-4 mb-3"><i class="bi bi-clock me-2"></i>Business Hours</h6>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ profile_form.business_hours_start.id_for_label }}" class="form-label">
+                                                    <i class="bi bi-clock me-1"></i>Opening Time
+                                                </label>
+                                                {{ profile_form.business_hours_start }}
+                                                {% if profile_form.business_hours_start.errors %}
+                                                    <div class="text-danger">{{ profile_form.business_hours_start.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ profile_form.business_hours_end.id_for_label }}" class="form-label">
+                                                    <i class="bi bi-clock-fill me-1"></i>Closing Time
+                                                </label>
+                                                {{ profile_form.business_hours_end }}
+                                                {% if profile_form.business_hours_end.errors %}
+                                                    <div class="text-danger">{{ profile_form.business_hours_end.errors }}</div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

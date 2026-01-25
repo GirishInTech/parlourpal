@@ -19,8 +19,23 @@ class BusinessProfile(models.Model):
     description = models.TextField(blank=True)
     image = models.ImageField(upload_to='uploads/', null=True, blank=True)
     image_url = models.URLField(blank=True, help_text="Cloudinary URL for business logo")
+    
+    # Detailed Location Fields
+    country = models.CharField(max_length=100, blank=True, help_text="Country")
+    state = models.CharField(max_length=100, blank=True, help_text="State/Province")
+    district = models.CharField(max_length=100, blank=True, help_text="District")
+    town = models.CharField(max_length=100, blank=True, help_text="Town/City")
+    address = models.TextField(blank=True, help_text="Complete business address")
+    
+    # Legacy location field (kept for backward compatibility)
     location = models.CharField(max_length=200, blank=True, help_text="Business address or location")
+    
+    # Contact Information
     phone = models.CharField(max_length=20, blank=True, help_text="Contact phone number")
+    
+    # Business Hours
+    business_hours_start = models.TimeField(null=True, blank=True, help_text="Opening time")
+    business_hours_end = models.TimeField(null=True, blank=True, help_text="Closing time")
     timing = models.CharField(max_length=100, blank=True, help_text="Business hours (e.g., 9:00 AM - 8:00 PM)")
 
     class Meta:

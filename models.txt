@@ -1,0 +1,12 @@
+# A balanced model that offers a good mix of quality and speed for general-purpose image generation.
+        # Imagen_Model = "imagen-4.0-generate-preview-06-06"
+
+        # A model optimized for speed and low latency, ideal for real-time applications.
+        # Imagen_Model = "imagen-4.0-fast-generate-preview-06-06"
+
+        # The highest quality model in the family, best for complex prompts, high detail, and accurate text rendering.
+        Imagen_Model = "imagen-4.0-ultra-generate-preview-06-06"
+
+
+        #Unlike standard Imagen, this model has "reasoning" capabilities. It understands that "Yugadi" isn't just a text string; it implies festivity, leaves, green, yellow, traditional vibes.
+        # Imagen_Model = "gemini-3-pro-image-preview"

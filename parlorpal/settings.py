@@ -23,6 +23,7 @@ load_dotenv()  # 🔐 Load the .env file
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")  # For Gemini 3 Pro Image (Nano Banana)
 
 GOOGLE_VERTEX_API_KEY = os.getenv("GOOGLE_VERTEX_API_KEY")
 VERTEX_IMAGE_ENDPOINT = os.getenv("VERTEX_IMAGE_ENDPOINT")
