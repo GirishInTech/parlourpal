@@ -67,56 +67,50 @@ import traceback
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CREDENTIALS_PATH = os.path.join(BASE_DIR, 'secrets', 'image-gen-demo-epsilon-d9e1f100bfc8.json')
 
-# Try to set credentials from environment variable first (for production)
-google_creds_json = os.getenv('GOOGLE_CREDENTIALS_JSON')
-if google_creds_json:
-    # Production: credentials provided as JSON string in environment variable
-    try:
-        credentials_file = '/tmp/google-credentials.json'
-        with open(credentials_file, 'w') as f:
-            f.write(google_creds_json)
-        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_file
-        print("SUCCESS: Using Google credentials from environment variable")
-    except Exception as e:
-        print(f"ERROR: Failed to write credentials from environment: {e}")
-elif os.path.exists(CREDENTIALS_PATH):
-    # Development: use local credentials file
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = CREDENTIALS_PATH
-    print(f"SUCCESS: Using local credentials file at {CREDENTIALS_PATH}")
-else:
-    print(f"WARNING: No Google credentials found. Image generation will not work.")
-
-# Initialize Vertex AI
+# Global variable for model
 imagen_model_preview = None
-try:
-    if os.getenv('GOOGLE_APPLICATION_CREDENTIALS'):
-        vertexai.init(project=os.getenv('GCP_PROJECT_ID'), location="us-central1")
+_vertexai_initialized = False
 
-        # A balanced model that offers a good mix of quality and speed for general-purpose image generation.
-        # Imagen_Model = "imagen-4.0-generate-preview-06-06"
-
-        # A model optimized for speed and low laturity, ideal for real-time applications.
-        # Imagen_Model = "imagen-4.0-fast-generate-preview-06-06"
-
-        # The highest quality model in the family, best for complex prompts, high detail, and accurate text rendering.
-        Imagen_Model = "imagen-4.0-ultra-generate-preview-06-06"        
-
-        imagen_model_preview = ImageGenerationModel.from_pretrained(Imagen_Model)
-        
-        if imagen_model_preview:
-            print(f"imagen_model_preview initialized successfully: {imagen_model_preview}")
-            print(f"Using model: {Imagen_Model}")
-        else:
-            print(f"imagen_model_preview failed to initialize")
-            print(f"Model failed: {Imagen_Model}")
-        print("SUCCESS: Vertex AI initialized successfully")
+def initialize_vertex_ai():
+    """Lazy initialization of Vertex AI - only called when needed"""
+    global imagen_model_preview, _vertexai_initialized
+    
+    if _vertexai_initialized:
+        return imagen_model_preview
+    
+    # Try to set credentials from environment variable first (for production)
+    google_creds_json = os.getenv('GOOGLE_CREDENTIALS_JSON')
+    if google_creds_json:
+        try:
+            credentials_file = '/tmp/google-credentials.json'
+            with open(credentials_file, 'w') as f:
+                f.write(google_creds_json)
+            os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_file
+            print("SUCCESS: Using Google credentials from environment variable")
+        except Exception as e:
+            print(f"ERROR: Failed to write credentials from environment: {e}")
+            _vertexai_initialized = True
+            return None
+    elif os.path.exists(CREDENTIALS_PATH):
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = CREDENTIALS_PATH
+        print(f"SUCCESS: Using local credentials file")
     else:
-        print("WARNING: Skipping Vertex AI initialization - no credentials available")
-except Exception as e:
-    error_details = traceback.format_exc()
-    print(f"CRITICAL: Could not initialize Vertex AI. Error: {e}")
-    print(f"DEBUG: Full error traceback: {error_details}")
-    imagen_model_preview = None
+        print(f"WARNING: No Google credentials found")
+        _vertexai_initialized = True
+        return None
+
+    try:
+        if os.getenv('GOOGLE_APPLICATION_CREDENTIALS'):
+            vertexai.init(project=os.getenv('GCP_PROJECT_ID'), location="us-central1")
+            Imagen_Model = "imagen-4.0-ultra-generate-preview-06-06"
+            imagen_model_preview = ImageGenerationModel.from_pretrained(Imagen_Model)
+            print(f"SUCCESS: Vertex AI initialized with {Imagen_Model}")
+        _vertexai_initialized = True
+        return imagen_model_preview
+    except Exception as e:
+        print(f"ERROR: Vertex AI initialization failed: {e}")
+        _vertexai_initialized = True
+        return None
 
 
 
@@ -564,10 +558,12 @@ def poster_generator_view(request):
     poster_url = None
 
     if request.method == 'POST':
-        # Check if imagen_model_preview is available
-        if 'imagen_model_preview' not in globals() or imagen_model_preview is None:
-            messages.error(request, "Poster generation is currently unavailable due to a configuration error. Please contact support.")
+        # Initialize Vertex AI on first use
+        model = initialize_vertex_ai()
+        if model is None:
+            messages.error(request, "Poster generation is currently unavailable. Please try again later.")
             return redirect('dashboard')
+        
         promotion_name = request.POST.get("promotion_name", "").strip()
         offer_type = request.POST.get("offer_type")
         custom_offer = request.POST.get("custom_offer")
@@ -626,7 +622,7 @@ POSTER GOAL:
             try:
                 print(f"DEBUG: About to generate image with prompt: {prompt_text}")
                 # --- MODIFICATION: Calling the old model's 'generate_images' method ---
-                response = imagen_model_preview.generate_images(
+                response = model.generate_images(
                     prompt=prompt_text,
                     number_of_images=1,
                 )
