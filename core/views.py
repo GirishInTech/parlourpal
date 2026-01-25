@@ -40,7 +40,6 @@ from .cloudinary_utils import upload_image_to_cloudinary, optimize_image_for_clo
 # --- MODIFICATION: Using the old 'preview' library as requested ---
 from vertexai.preview.vision_models import ImageGenerationModel
 import google.generativeai as genai
-from google import genai
 from google.genai import types
 from vertexai.language_models import TextGenerationModel
 
