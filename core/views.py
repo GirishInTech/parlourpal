@@ -56,42 +56,46 @@ except Exception as e:
     print(f"CRITICAL: Could not initialize Cohere client. Error: {e}")
 
 # Initialize Vertex AI once
-# 
-
-
 import os
+import json
 import vertexai
 from vertexai.preview.vision_models import ImageGenerationModel
 from google.api_core.exceptions import GoogleAPIError
 import traceback
 
-# Construct the absolute path to the credentials file
-# This assumes the 'secrets' directory is a subdirectory of your project's base directory
+# Handle Google credentials - support both file and environment variable
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CREDENTIALS_PATH = os.path.join(BASE_DIR, 'secrets', 'image-gen-demo-epsilon-d9e1f100bfc8.json')
 
-# Check if the file exists before trying to use it
-
-
-if not os.path.exists(CREDENTIALS_PATH):
-    print(f"CRITICAL: Credentials file not found at {CREDENTIALS_PATH}")
-    imagen_model_preview = None
-else:
-    # Set the environment variable with the verified path
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = CREDENTIALS_PATH
-
+# Try to set credentials from environment variable first (for production)
+google_creds_json = os.getenv('GOOGLE_CREDENTIALS_JSON')
+if google_creds_json:
+    # Production: credentials provided as JSON string in environment variable
     try:
-        # Print debug information
-        print(f"DEBUG: GOOGLE_APPLICATION_CREDENTIALS: {os.getenv('GOOGLE_APPLICATION_CREDENTIALS')}")
-        
-        # Initialize Vertex AI
-        vertexai.init(project=os.getenv('GCP_PROJECT_ID'), location="us-central1")
+        credentials_file = '/tmp/google-credentials.json'
+        with open(credentials_file, 'w') as f:
+            f.write(google_creds_json)
+        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_file
+        print("SUCCESS: Using Google credentials from environment variable")
+    except Exception as e:
+        print(f"ERROR: Failed to write credentials from environment: {e}")
+elif os.path.exists(CREDENTIALS_PATH):
+    # Development: use local credentials file
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = CREDENTIALS_PATH
+    print(f"SUCCESS: Using local credentials file at {CREDENTIALS_PATH}")
+else:
+    print(f"WARNING: No Google credentials found. Image generation will not work.")
 
+# Initialize Vertex AI
+imagen_model_preview = None
+try:
+    if os.getenv('GOOGLE_APPLICATION_CREDENTIALS'):
+        vertexai.init(project=os.getenv('GCP_PROJECT_ID'), location="us-central1")
 
         # A balanced model that offers a good mix of quality and speed for general-purpose image generation.
         # Imagen_Model = "imagen-4.0-generate-preview-06-06"
 
-        # A model optimized for speed and low latency, ideal for real-time applications.
+        # A model optimized for speed and low laturity, ideal for real-time applications.
         # Imagen_Model = "imagen-4.0-fast-generate-preview-06-06"
 
         # The highest quality model in the family, best for complex prompts, high detail, and accurate text rendering.
@@ -99,20 +103,20 @@ else:
 
         imagen_model_preview = ImageGenerationModel.from_pretrained(Imagen_Model)
         
-        
-        if  imagen_model_preview:
-            print(f"imagen_model_preview initialized successfully and is it {imagen_model_preview}")
-            print(f"particular model is {Imagen_Model}")
+        if imagen_model_preview:
+            print(f"imagen_model_preview initialized successfully: {imagen_model_preview}")
+            print(f"Using model: {Imagen_Model}")
         else:
-            print("{imagen_model_preview} failed to initialize")
-            print("particular model failed to initialize is {Imagen_Model}")
+            print(f"imagen_model_preview failed to initialize")
+            print(f"Model failed: {Imagen_Model}")
         print("SUCCESS: Vertex AI initialized successfully")
-
-    except Exception as e:
-        error_details = traceback.format_exc()
-        print(f"CRITICAL: Could not initialize Vertex AI. Error: {e}")
-        print(f"DEBUG: Full error traceback: {error_details}")
-        imagen_model_preview = None
+    else:
+        print("WARNING: Skipping Vertex AI initialization - no credentials available")
+except Exception as e:
+    error_details = traceback.format_exc()
+    print(f"CRITICAL: Could not initialize Vertex AI. Error: {e}")
+    print(f"DEBUG: Full error traceback: {error_details}")
+    imagen_model_preview = None
 
 
 
