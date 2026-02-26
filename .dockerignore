@@ -1,0 +1,49 @@
+# ── Python cache ─────────────────────────────
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ── Version control ───────────────────────────
+.git/
+.gitignore
+.gitattributes
+
+# ── Virtual environments ──────────────────────
+venv/
+.venv/
+env/
+ENV/
+
+# ── IDE / OS noise ────────────────────────────
+.vscode/
+.idea/
+*.DS_Store
+desktop.ini
+
+# ── Build / dist artefacts ────────────────────
+dist/
+build/
+*.egg-info/
+
+# ── Logs ─────────────────────────────────────
+*.log
+logs/
+
+# ── Testing folder (not needed in image) ─────
+testing/
+
+# ── ML training scripts (not part of web app) ─
+ML/
+
+# ── Local test scripts ─────────────────────────
+imagedemo.py
+test_gemini3_image.py
+
+# ── Render/Railway deploy files (not needed) ──
+render.yaml
+Procfile
+
+# ── Docs ─────────────────────────────────────
+README.md

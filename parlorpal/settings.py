@@ -50,6 +50,7 @@ ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = [
     "https://web-production-209f.up.railway.app",
     "https://parlorpal.onrender.com",
+    "https://*.trycloudflare.com"
 ]
 
 

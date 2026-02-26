@@ -52,3 +52,4 @@ wheels/
 fixtures/
 testing/
 All_users_parlorpal.txt
+sqlite_dump.json

@@ -325,7 +325,7 @@
     <div class="loading-content">
         <div class="loading-spinner"></div>
         <div class="loading-text">🎨 Generating Your Poster...</div>
-        <div class="loading-subtext">Using Gemini 3 Pro Image (Nano Banana) for perfect text rendering</div>
+        <div class="loading-subtext" id="model-loading-text">Please wait...</div>
         <div class="loading-subtext" style="margin-top: 10px;">⏱️ This may take 30-60 seconds. Please wait...</div>
     </div>
 </div>
@@ -491,6 +491,26 @@
             </select>
         </div>
 
+                        <!-- Model Selection -->
+        <div class="mb-3">
+                            <label for="model_selection" class="form-label">
+                                <i class="bi bi-cpu me-1"></i>
+                                AI Model
+                            </label>
+            <select class="form-select" name="model_selection" id="model_selection" required>
+                <option value="">-- Select Model --</option>
+                <optgroup label="💰 Imagen Models (Lower Cost)">
+                    <option value="imagen-4.0-generate-preview-06-06">Balanced Model - Good mix of quality and speed</option>
+                    <option value="imagen-4.0-fast-generate-preview-06-06">Fast Model - Optimized for speed and low latency</option>
+                    <option value="imagen-4.0-ultra-generate-preview-06-06" selected>Ultra Model - Highest quality with complex details</option>
+                </optgroup>
+                <optgroup label="✨ Gemini Models (Higher Cost, Better Text)">
+                    <option value="gemini-3-pro-image-preview">Gemini 3 Pro - Best for text rendering & emotions</option>
+                </optgroup>
+            </select>
+            <small class="text-muted">Imagen models use GenAI credits (free). Gemini 3 uses paid API.</small>
+        </div>
+
                         <!-- Generate Button -->
                         <button type="submit" id="generate_poster_btn" class="btn generate-poster-btn">
                             <i class="bi bi-magic me-2"></i>
@@ -602,6 +622,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadingOverlay = document.getElementById('loadingOverlay');
     const offerTypeSelect = document.getElementById('offer_type');
     const customOfferDiv = document.getElementById('custom_offer_div');
+    const modelSelect = document.getElementById('model_selection');
+    const modelLoadingText = document.getElementById('model-loading-text');
 
     // Always hide loading overlay on page load (in case of errors or back navigation)
     loadingOverlay.classList.remove('show');
@@ -618,6 +640,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             isSubmitting = true;
+            
+            // Update loading text based on selected model
+            const selectedModel = modelSelect.value;
+            if (modelLoadingText) {
+                if (selectedModel.includes('gemini')) {
+                    modelLoadingText.textContent = 'Using Gemini 3 Pro (better text & emotions)';
+                } else if (selectedModel.includes('ultra')) {
+                    modelLoadingText.textContent = 'Using Imagen Ultra (highest quality)';
+                } else if (selectedModel.includes('fast')) {
+                    modelLoadingText.textContent = 'Using Imagen Fast (optimized speed)';
+                } else {
+                    modelLoadingText.textContent = 'Using Imagen Balanced (good quality & speed)';
+                }
+            }
             
             // Show loading overlay
             loadingOverlay.classList.add('show');

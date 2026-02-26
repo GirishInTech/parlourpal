@@ -7,6 +7,7 @@
 # Standard Library
 import os
 import uuid
+import traceback
 from io import BytesIO
 from datetime import datetime
 import json
@@ -642,14 +643,17 @@ def poster_generator_view(request):
         print(f"DEBUG: Loaded latest poster from DB: {poster_url}")
 
     if request.method == 'POST':
-        # Check if GOOGLE_API_KEY is configured
-        if not settings.GOOGLE_API_KEY:
-            messages.error(request, "Poster generation is currently unavailable. Please configure GOOGLE_API_KEY in your .env file.")
-            return redirect('dashboard')
         promotion_name = request.POST.get("promotion_name", "").strip()
         offer_type = request.POST.get("offer_type")
         custom_offer = request.POST.get("custom_offer")
         language = request.POST.get("language")
+        model_selection = request.POST.get("model_selection", "imagen-4.0-ultra-generate-preview-06-06").strip()
+        
+        # Check if model requires API key (Gemini models)
+        if "gemini" in model_selection.lower():
+            if not settings.GOOGLE_API_KEY:
+                messages.error(request, "Gemini models require GOOGLE_API_KEY. Please configure it in your .env file or use Imagen models.")
+                return redirect('dashboard')
 
         if not promotion_name:
             messages.error(request, "Please provide a promotion name.")
@@ -719,6 +723,9 @@ POSTER GOAL:
 - Should look modern, polished, and shareable
 - Designed to attract attention and drive real engagement on social media
 - Must clearly communicate what services the business provides through keywords
+- Encourage viewers to contact the business via phone for more details
+- Evoke a sense of excitement and urgency around the promotion
+- Incorporate cultural or festive elements if relevant to the promotion timing
 """
 
 
@@ -727,10 +734,46 @@ POSTER GOAL:
             
             print(prompt_text)
             try:
-                print(f"DEBUG: About to generate image with Gemini 3 Pro Image (Nano Banana)")
+                print(f"DEBUG: About to generate image with model: {model_selection}")
                 
-                # --- NEW: Using Gemini 3 Pro Image (Nano Banana) for better text rendering ---
-                pil_image = generate_poster_gemini_3(prompt_text)
+                # Route to appropriate generation function based on model selection
+                pil_image = None
+                
+                if "gemini" in model_selection.lower():
+                    # Use Gemini 3 Pro Image (Nano Banana) for better text rendering
+                    print(f"DEBUG: Using Gemini 3 Pro Image API")
+                    pil_image = generate_poster_gemini_3(prompt_text)
+                else:
+                    # Use Vertex AI Imagen models (free with credits)
+                    print(f"DEBUG: Using Vertex AI Imagen: {model_selection}")
+                    if not imagen_model_preview:
+                        messages.error(request, "Imagen models are not initialized. Please check your Google credentials.")
+                        return redirect('generate_poster')
+                    
+                    # Reinitialize with selected model
+                    try:
+                        imagen_model = ImageGenerationModel.from_pretrained(model_selection)
+                        response = imagen_model.generate_images(
+                            prompt=prompt_text,
+                            number_of_images=1,
+                            aspect_ratio="1:1",
+                            safety_filter_level="block_some",
+                            person_generation="allow_all"
+                        )
+                        # ImageGenerationResponse has .images attribute
+                        if response and hasattr(response, 'images') and len(response.images) > 0:
+                            # Convert Imagen response to PIL Image
+                            image_bytes = response.images[0]._image_bytes
+                            pil_image = Image.open(BytesIO(image_bytes))
+                            print(f"DEBUG: Successfully generated image with Imagen: {model_selection}")
+                        else:
+                            print(f"DEBUG: Imagen returned no images (may be blocked by safety filters)")
+                            messages.warning(request, "Image could not be generated. It may have been blocked by safety filters. Try rephrasing your promotion.")
+                    except Exception as img_error:
+                        print(f"DEBUG: Imagen generation error: {img_error}")
+                        print(f"DEBUG: Full error traceback: {traceback.format_exc()}")
+                        messages.error(request, f"Image generation failed with selected model. Please try a different model or contact support.")
+                        return redirect('generate_poster')
                 
                 if pil_image:
                     print(f"DEBUG: Successfully generated PIL Image")
@@ -779,6 +822,7 @@ POSTER GOAL:
                                 'promotion_name': promotion_name,
                                 'offer_type': final_offer,
                                 'language': language,
+                                'model': model_selection,
                                 'business_name': business_name,
                                 'location': location,
                                 'phone': phone,
