@@ -1,10 +1,17 @@
-# Environment variables
+# ============================================================
+# SECRETS & CREDENTIALS — NEVER commit these
+# ============================================================
 .env
 .env.local
 .env.*.local
 secrets/
+*.json.key
+*service-account*.json
+*credentials*.json
 
+# ============================================================
 # Python
+# ============================================================
 venv/
 .venv/
 env/
@@ -16,40 +23,67 @@ __pycache__/
 .Python
 pip-log.txt
 pip-delete-this-directory.txt
+*.egg-info/
+*.egg
+wheels/
+build/
+dist/
 
+# ============================================================
 # Django
+# ============================================================
+db.sqlite3
 /media/
 staticfiles/
 *.log
 local_settings.py
+sqlite_dump.json
 
-# Testing
+# ============================================================
+# ML / Data files (large binaries)
+# ============================================================
+ML/*.xlsx
+ML/*.csv
+ML/*.pkl
+ML/*.h5
+ML/*.pt
+ML/*.pth
+*.xlsx
+*.csv
+
+# ============================================================
+# Testing & QA
+# ============================================================
 .pytest_cache/
 .coverage
 htmlcov/
 .tox/
 .nox/
+fixtures/
+testing/
 
-# IDE
+# ============================================================
+# IDE & Editor
+# ============================================================
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# ============================================================
+# OS junk
+# ============================================================
 .DS_Store
 Thumbs.db
+desktop.ini
 *.bak
 
-# Distribution / packaging
-build/
-dist/
-*.egg-info/
-*.egg
-wheels/
-
-fixtures/
-testing/
+# ============================================================
+# Misc project-specific
+# ============================================================
 All_users_parlorpal.txt
-sqlite_dump.json
+models.txt
+imagedemo.py
+import_data.py
+test_gemini3_image.py
