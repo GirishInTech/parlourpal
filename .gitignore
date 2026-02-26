@@ -87,3 +87,6 @@ models.txt
 imagedemo.py
 import_data.py
 test_gemini3_image.py
+
+
+.env.example
