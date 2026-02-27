@@ -1,106 +1,410 @@
 {% extends "core/base.html" %}
+{% load static %}
 {% block title %}Email Subject Line Generator{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ── Page layout ──────────────────────────────── */
+    .subject-page {
+        min-height: 80vh;
+        background: linear-gradient(135deg, var(--bg-light, #f8f5ff), var(--white, #fff));
+        padding: 2.5rem 0;
+    }
+
+    .subject-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(168, 139, 235, 0.12);
+        border: 1px solid rgba(168, 139, 235, 0.15);
+        padding: 2.5rem;
+        max-width: 640px;
+        margin: 0 auto;
+    }
+
+    .subject-card h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 0.25rem;
+    }
+
+    .subject-card .page-sub {
+        color: #6b7280;
+        font-size: 0.95rem;
+        margin-bottom: 2rem;
+    }
+
+    /* ── Field group ──────────────────────────────── */
+    .field-group {
+        margin-bottom: 1.4rem;
+    }
+
+    .field-group>label {
+        display: block;
+        font-weight: 600;
+        font-size: 0.875rem;
+        color: #1a1a2e;
+        margin-bottom: 0.45rem;
+        letter-spacing: 0.01em;
+    }
+
+    /* ── Dropdown wrapper — pseudo-element arrow ───── */
+    .sel-wrap {
+        display: block;
+        position: relative;
+        overflow: hidden;
+        height: 44px;
+        width: 100%;
+        background: #f7f5ff;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(168, 139, 235, 0.08);
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .sel-wrap:hover {
+        border-color: #a88beb;
+    }
+
+    .sel-wrap:focus-within {
+        border-color: #a88beb;
+        box-shadow: 0 0 0 3px rgba(168, 139, 235, 0.2);
+        overflow: visible;
+    }
+
+    /* Up/down arrows via ::before / ::after */
+    .sel-wrap::before,
+    .sel-wrap::after {
+        content: '';
+        position: absolute;
+        z-index: 2;
+        top: 50%;
+        right: 14px;
+        width: 0;
+        height: 0;
+        border: 5px dashed;
+        border-color: #a88beb transparent;
+        pointer-events: none;
+    }
+
+    .sel-wrap::before {
+        margin-top: -13px;
+        border-bottom-style: solid;
+        border-top: none;
+    }
+
+    .sel-wrap::after {
+        margin-top: 3px;
+        border-top-style: solid;
+        border-bottom: none;
+    }
+
+    /* The <select> inside */
+    .dropdown-select {
+        position: relative;
+        width: 115%;
+        height: 100%;
+        margin: 0;
+        padding: 0 12px;
+        font-size: 0.95rem;
+        color: #1a1a2e;
+        background: rgba(0, 0, 0, 0) !important;
+        border: 0;
+        border-radius: 0;
+        cursor: pointer;
+        -webkit-appearance: none;
+        appearance: none;
+        outline: none;
+    }
+
+    .dropdown-select:focus {
+        z-index: 3;
+        width: 100%;
+        color: #1a1a2e;
+    }
+
+    .dropdown-select>option {
+        background: #f7f5ff;
+        color: #1a1a2e;
+    }
+
+    /* Firefox fix */
+    @-moz-document url-prefix() {
+        .dropdown-select {
+            padding-left: 8px;
+        }
+    }
+
+    /* ── Custom text input (shown on "Other") ─────── */
+    .custom-input {
+        margin-top: 0.6rem;
+        width: 100%;
+        padding: 0.7rem 1rem;
+        font-size: 0.95rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        outline: none;
+        background: #fff;
+        color: #1a1a2e;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .custom-input:focus {
+        border-color: #a88beb;
+        box-shadow: 0 0 0 3px rgba(168, 139, 235, 0.2);
+    }
+
+    /* ── Submit button ────────────────────────────── */
+    .generate-btn {
+        width: 100%;
+        padding: 0.875rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #a88beb, #7c5cbf);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        margin-top: 0.5rem;
+    }
+
+    .generate-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(168, 139, 235, 0.35);
+    }
+
+    /* ── Results ──────────────────────────────────── */
+    .results-section {
+        max-width: 640px;
+        margin: 2rem auto 0;
+    }
+
+    .results-section h4 {
+        font-weight: 700;
+        color: #1a1a2e;
+        margin-bottom: 1rem;
+    }
+
+    .results-section .list-group-item {
+        border-radius: 8px !important;
+        border: 1px solid rgba(168, 139, 235, 0.2);
+        margin-bottom: 0.5rem;
+        padding: 0.85rem 1rem;
+        font-size: 0.95rem;
+        color: #1a1a2e;
+    }
+
+    /* ── Dark mode ────────────────────────────────── */
+    .dark-mode .subject-page {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+    }
+
+    .dark-mode .subject-card {
+        background: #1e1e3a;
+        border-color: rgba(168, 139, 235, 0.25);
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .dark-mode .subject-card h2 {
+        color: #f0eaff;
+    }
+
+    .dark-mode .subject-card .page-sub {
+        color: #a0a0b8;
+    }
+
+    .dark-mode .field-group>label {
+        color: #d4c9f5;
+    }
+
+    .dark-mode .dropdown {
+        background: #2a2a4a;
+        border-color: #3d3d6b;
+        box-shadow: inset 0 1px rgba(255, 255, 255, 0.06), 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .dark-mode .dropdown:hover {
+        border-color: #a88beb;
+    }
+
+    .dark-mode .dropdown:focus-within {
+        border-color: #a88beb;
+        box-shadow: 0 0 0 3px rgba(168, 139, 235, 0.25);
+    }
+
+    .dark-mode .dropdown::before {
+        border-bottom-color: #c4a8f5;
+    }
+
+    .dark-mode .dropdown::after {
+        border-top-color: #c4a8f5;
+    }
+
+    .dark-mode .dropdown-select {
+        color: #e0d4ff;
+    }
+
+    .dark-mode .dropdown-select:focus {
+        color: #f0eaff;
+    }
+
+    .dark-mode .dropdown-select>option {
+        background: #2a2a4a;
+        color: #e0d4ff;
+    }
+
+    .dark-mode .custom-input {
+        background: #2a2a4a;
+        color: #f0eaff;
+        border-color: #3d3d6b;
+    }
+
+    .dark-mode .custom-input::placeholder {
+        color: #7070a0;
+    }
+
+    .dark-mode .custom-input:focus {
+        border-color: #a88beb;
+        box-shadow: 0 0 0 3px rgba(168, 139, 235, 0.25);
+    }
+
+    .dark-mode .results-section h4 {
+        color: #f0eaff;
+    }
+
+    .dark-mode .results-section .list-group-item {
+        background-color: #2a2a4a;
+        color: #f0eaff;
+        border-color: rgba(168, 139, 235, 0.25);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-4">
-    <h2 class="mb-4">Email Subject Line Generator</h2>
-    <form method="post" class="mb-4" id="subjectForm">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="offer" class="form-label">Offer or Campaign</label>
-            <select class="form-select" id="offer" name="offer">
-                <option value="Summer Sale">Summer Sale</option>
-                <option value="Festival Discount">Festival Discount</option>
-                <option value="New Service Launch">New Service Launch</option>
-                <option value="Referral Bonus">Referral Bonus</option>
-                <option value="Anniversary Offer">Anniversary Offer</option>
-                <option value="Other">Other</option>
-            </select>
-            <input type="text" class="form-control mt-2" id="offer_custom" name="offer_custom" placeholder="Enter custom offer/campaign" style="display:none;">
+<div class="subject-page">
+    <div class="container">
+        <div class="subject-card">
+            <h2>Email Subject Line Generator</h2>
+            <p class="page-sub">Fill in the details below and we'll craft high-converting subject lines for you.</p>
+
+            <form method="post" id="subjectForm">
+                {% csrf_token %}
+
+                <div class="field-group">
+                    <label for="offer">Offer or Campaign</label>
+                    <div class="dropdown">
+                        <select class="dropdown-select" id="offer" name="offer">
+                            <option value="Summer Sale">Summer Sale</option>
+                            <option value="Festival Discount">Festival Discount</option>
+                            <option value="New Service Launch">New Service Launch</option>
+                            <option value="Referral Bonus">Referral Bonus</option>
+                            <option value="Anniversary Offer">Anniversary Offer</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <input type="text" class="custom-input" id="offer_custom" name="offer_custom"
+                        placeholder="Enter custom offer/campaign" style="display:none;">
+                </div>
+
+                <div class="field-group">
+                    <label for="audience">Target Audience</label>
+                    <div class="dropdown">
+                        <select class="dropdown-select" id="audience" name="audience">
+                            <option value="Brides-to-be">Brides-to-be</option>
+                            <option value="Families">Families</option>
+                            <option value="Students">Students</option>
+                            <option value="Professionals">Professionals</option>
+                            <option value="Seniors">Seniors</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <input type="text" class="custom-input" id="audience_custom" name="audience_custom"
+                        placeholder="Enter custom audience" style="display:none;">
+                </div>
+
+                <div class="field-group">
+                    <label for="tone">Tone</label>
+                    <div class="dropdown">
+                        <select class="dropdown-select" id="tone" name="tone">
+                            <option value="Exciting">Exciting</option>
+                            <option value="Professional">Professional</option>
+                            <option value="Friendly">Friendly</option>
+                            <option value="Luxurious">Luxurious</option>
+                            <option value="Fun">Fun</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <input type="text" class="custom-input" id="tone_custom" name="tone_custom"
+                        placeholder="Enter custom tone" style="display:none;">
+                </div>
+
+                <button type="submit" class="generate-btn">Generate Subject Lines</button>
+            </form>
+
+            <div id="loadingSpinner" class="text-center my-3" style="display:none;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <div class="mt-2 text-muted">Generating subject lines...</div>
+            </div>
+
+            {% if error %}
+            <div class="alert alert-danger mt-3">{{ error }}</div>
+            {% endif %}
+
+            {% if subject_lines %}
+            <div class="results-section">
+                <h4>Generated Subject Lines:</h4>
+                <ul class="list-group">
+                    {% for line in subject_lines %}
+                    <li class="list-group-item">{{ line }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
         </div>
-        <div class="mb-3">
-            <label for="audience" class="form-label">Target Audience</label>
-            <select class="form-select" id="audience" name="audience">
-                <option value="Brides-to-be">Brides-to-be</option>
-                <option value="Families">Families</option>
-                <option value="Students">Students</option>
-                <option value="Professionals">Professionals</option>
-                <option value="Seniors">Seniors</option>
-                <option value="Other">Other</option>
-            </select>
-            <input type="text" class="form-control mt-2" id="audience_custom" name="audience_custom" placeholder="Enter custom audience" style="display:none;">
-        </div>
-        <div class="mb-3">
-            <label for="tone" class="form-label">Tone</label>
-            <select class="form-select" id="tone" name="tone">
-                <option value="Exciting">Exciting</option>
-                <option value="Professional">Professional</option>
-                <option value="Friendly">Friendly</option>
-                <option value="Luxurious">Luxurious</option>
-                <option value="Fun">Fun</option>
-                <option value="Other">Other</option>
-            </select>
-            <input type="text" class="form-control mt-2" id="tone_custom" name="tone_custom" placeholder="Enter custom tone" style="display:none;">
-        </div>
-        <button type="submit" class="btn btn-primary">Generate Subject Lines</button>
-    </form>
-    <div id="loadingSpinner" class="text-center my-3" style="display:none;">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <div class="mt-2 text-muted">Generating subject lines...</div>
     </div>
-    {% if error %}
-        <div class="alert alert-danger">{{ error }}</div>
-    {% endif %}
-    {% if subject_lines %}
-        <h4>Generated Subject Lines:</h4>
-        <ul class="list-group">
-            {% for line in subject_lines %}
-                <li class="list-group-item">{{ line }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
 </div>
+
 <script>
-// Show/hide custom input for Offer
-const offerSelect = document.getElementById('offer');
-const offerCustom = document.getElementById('offer_custom');
-offerSelect.addEventListener('change', function() {
-    offerCustom.style.display = this.value === 'Other' ? 'block' : 'none';
-    if (this.value !== 'Other') offerCustom.value = '';
-});
-// Show/hide custom input for Audience
-const audienceSelect = document.getElementById('audience');
-const audienceCustom = document.getElementById('audience_custom');
-audienceSelect.addEventListener('change', function() {
-    audienceCustom.style.display = this.value === 'Other' ? 'block' : 'none';
-    if (this.value !== 'Other') audienceCustom.value = '';
-});
-// Show/hide custom input for Tone
-const toneSelect = document.getElementById('tone');
-const toneCustom = document.getElementById('tone_custom');
-toneSelect.addEventListener('change', function() {
-    toneCustom.style.display = this.value === 'Other' ? 'block' : 'none';
-    if (this.value !== 'Other') toneCustom.value = '';
-});
-// On submit, use custom values if provided and show spinner
-const form = document.getElementById('subjectForm');
-const spinner = document.getElementById('loadingSpinner');
-form.addEventListener('submit', function(e) {
-    if (offerSelect.value === 'Other') {
-        offerSelect.value = offerCustom.value;
-    }
-    if (audienceSelect.value === 'Other') {
-        audienceSelect.value = audienceCustom.value;
-    }
-    if (toneSelect.value === 'Other') {
-        toneSelect.value = toneCustom.value;
-    }
-    spinner.style.display = 'block';
-});
-// Hide spinner after page load (when results or error are shown)
-window.addEventListener('DOMContentLoaded', function() {
-    spinner.style.display = 'none';
-});
+    // Show/hide custom input for Offer
+    const offerSelect = document.getElementById('offer');
+    const offerCustom = document.getElementById('offer_custom');
+    offerSelect.addEventListener('change', function () {
+        offerCustom.style.display = this.value === 'Other' ? 'block' : 'none';
+        if (this.value !== 'Other') offerCustom.value = '';
+    });
+
+    // Show/hide custom input for Audience
+    const audienceSelect = document.getElementById('audience');
+    const audienceCustom = document.getElementById('audience_custom');
+    audienceSelect.addEventListener('change', function () {
+        audienceCustom.style.display = this.value === 'Other' ? 'block' : 'none';
+        if (this.value !== 'Other') audienceCustom.value = '';
+    });
+
+    // Show/hide custom input for Tone
+    const toneSelect = document.getElementById('tone');
+    const toneCustom = document.getElementById('tone_custom');
+    toneSelect.addEventListener('change', function () {
+        toneCustom.style.display = this.value === 'Other' ? 'block' : 'none';
+        if (this.value !== 'Other') toneCustom.value = '';
+    });
+
+    // On submit, use custom values if provided and show spinner
+    const form = document.getElementById('subjectForm');
+    const spinner = document.getElementById('loadingSpinner');
+    form.addEventListener('submit', function () {
+        if (offerSelect.value === 'Other') offerSelect.value = offerCustom.value;
+        if (audienceSelect.value === 'Other') audienceSelect.value = audienceCustom.value;
+        if (toneSelect.value === 'Other') toneSelect.value = toneCustom.value;
+        spinner.style.display = 'block';
+    });
+
+    // Hide spinner on page load
+    window.addEventListener('DOMContentLoaded', function () {
+        spinner.style.display = 'none';
+    });
 </script>
-{% endblock %} 
+{% endblock %}
