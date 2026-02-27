@@ -210,18 +210,19 @@
                     </div>
 
                     {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                <i class="bi bi-{% if message.tags == 'error' %}exclamation-triangle{% else %}check-circle{% endif %} me-2"></i>
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        <i
+                            class="bi bi-{% if message.tags == 'error' %}exclamation-triangle{% else %}check-circle{% endif %} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
                     {% endif %}
 
                     <form method="post" class="auth-form" id="login_form" novalidate>
                         {% csrf_token %}
-                        
+
                         <div class="mb-3">
                             <label for="username" class="form-label">
                                 <i class="bi bi-person me-1"></i>
@@ -231,12 +232,8 @@
                                 <span class="input-group-text">
                                     <i class="bi bi-person"></i>
                                 </span>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="username" 
-                                       name="username" 
-                                       placeholder="Enter your username or email"
-                                       required>
+                                <input type="text" class="form-control" id="username" name="username"
+                                    placeholder="Enter your username or email" required>
                                 <div class="invalid-feedback">
                                     Please enter a valid username or email.
                                 </div>
@@ -252,12 +249,8 @@
                                 <span class="input-group-text">
                                     <i class="bi bi-lock"></i>
                                 </span>
-                                <input type="password" 
-                                       class="form-control" 
-                                       id="password" 
-                                       name="password" 
-                                       placeholder="Enter your password"
-                                       required>
+                                <input type="password" class="form-control" id="password" name="password"
+                                    placeholder="Enter your password" required>
                                 <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                                     <i class="bi bi-eye" id="toggleIcon"></i>
                                 </button>
@@ -265,13 +258,6 @@
                                     Please enter your password.
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="mb-3 form-check">
-                            <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                            <label class="form-check-label" for="remember">
-                                Remember me
-                            </label>
                         </div>
 
                         <button type="submit" id="login_submit" class="btn btn-primary w-100 auth-btn">
@@ -294,7 +280,7 @@
                     </div>
 
                     <div class="text-center">
-                        <p class="mb-0">Don't have an account? 
+                        <p class="mb-0">Don't have an account?
                             <a href="{% url 'register' %}" class="auth-link">Create one now</a>
                         </p>
                     </div>
@@ -305,7 +291,7 @@
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const loginForm = document.getElementById("login_form");
         const loginSubmitButton = document.getElementById("login_submit");
         const loginSpinner = loginSubmitButton.querySelector(".spinner-border");
@@ -316,7 +302,7 @@
 
         // Password toggle functionality
         if (togglePassword && passwordInput && toggleIcon) {
-            togglePassword.addEventListener('click', function() {
+            togglePassword.addEventListener('click', function () {
                 const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
                 passwordInput.setAttribute('type', type);
                 toggleIcon.classList.toggle('bi-eye');
@@ -326,16 +312,16 @@
 
         // Form submission handling
         if (loginForm) {
-            loginForm.addEventListener('submit', function() {
+            loginForm.addEventListener('submit', function () {
                 console.log("✅ JavaScript: login form submitting as POST");
-                
+
                 // Disable the button
                 loginSubmitButton.disabled = true;
-                
+
                 // Show spinner and change text
                 loginSpinner.classList.remove("d-none");
                 btnText.textContent = "Signing In...";
-                
+
                 // Add loading class for visual feedback
                 loginSubmitButton.classList.add("btn-loading");
             });
@@ -344,7 +330,7 @@
         // Form validation
         const inputs = loginForm.querySelectorAll('.form-control');
         inputs.forEach(input => {
-            input.addEventListener('blur', function() {
+            input.addEventListener('blur', function () {
                 if (this.hasAttribute('required') && !this.value.trim()) {
                     this.classList.add('is-invalid');
                 } else {
@@ -353,7 +339,7 @@
                 }
             });
 
-            input.addEventListener('input', function() {
+            input.addEventListener('input', function () {
                 if (this.classList.contains('is-invalid')) {
                     this.classList.remove('is-invalid');
                 }
