@@ -100,7 +100,7 @@
     }
 
     /* The <select> inside */
-    .dropdown-select {
+    .sel-wrap-select {
         position: relative;
         width: 115%;
         height: 100%;
@@ -117,20 +117,20 @@
         outline: none;
     }
 
-    .dropdown-select:focus {
+    .sel-wrap-select:focus {
         z-index: 3;
         width: 100%;
         color: #1a1a2e;
     }
 
-    .dropdown-select>option {
+    .sel-wrap-select>option {
         background: #f7f5ff;
         color: #1a1a2e;
     }
 
     /* Firefox fix */
     @-moz-document url-prefix() {
-        .dropdown-select {
+        .sel-wrap-select {
             padding-left: 8px;
         }
     }
@@ -218,38 +218,38 @@
         color: #d4c9f5;
     }
 
-    .dark-mode .dropdown {
+    .dark-mode .sel-wrap {
         background: #2a2a4a;
         border-color: #3d3d6b;
         box-shadow: inset 0 1px rgba(255, 255, 255, 0.06), 0 1px 2px rgba(0, 0, 0, 0.3);
     }
 
-    .dark-mode .dropdown:hover {
+    .dark-mode .sel-wrap:hover {
         border-color: #a88beb;
     }
 
-    .dark-mode .dropdown:focus-within {
+    .dark-mode .sel-wrap:focus-within {
         border-color: #a88beb;
         box-shadow: 0 0 0 3px rgba(168, 139, 235, 0.25);
     }
 
-    .dark-mode .dropdown::before {
+    .dark-mode .sel-wrap::before {
         border-bottom-color: #c4a8f5;
     }
 
-    .dark-mode .dropdown::after {
+    .dark-mode .sel-wrap::after {
         border-top-color: #c4a8f5;
     }
 
-    .dark-mode .dropdown-select {
+    .dark-mode .sel-wrap-select {
         color: #e0d4ff;
     }
 
-    .dark-mode .dropdown-select:focus {
+    .dark-mode .sel-wrap-select:focus {
         color: #f0eaff;
     }
 
-    .dark-mode .dropdown-select>option {
+    .dark-mode .sel-wrap-select>option {
         background: #2a2a4a;
         color: #e0d4ff;
     }
@@ -293,8 +293,8 @@
 
                 <div class="field-group">
                     <label for="offer">Offer or Campaign</label>
-                    <div class="dropdown">
-                        <select class="dropdown-select" id="offer" name="offer">
+                    <div class="sel-wrap">
+                        <select class="sel-wrap-select" id="offer" name="offer">
                             <option value="Summer Sale">Summer Sale</option>
                             <option value="Festival Discount">Festival Discount</option>
                             <option value="New Service Launch">New Service Launch</option>
@@ -309,8 +309,8 @@
 
                 <div class="field-group">
                     <label for="audience">Target Audience</label>
-                    <div class="dropdown">
-                        <select class="dropdown-select" id="audience" name="audience">
+                    <div class="sel-wrap">
+                        <select class="sel-wrap-select" id="audience" name="audience">
                             <option value="Brides-to-be">Brides-to-be</option>
                             <option value="Families">Families</option>
                             <option value="Students">Students</option>
@@ -325,8 +325,8 @@
 
                 <div class="field-group">
                     <label for="tone">Tone</label>
-                    <div class="dropdown">
-                        <select class="dropdown-select" id="tone" name="tone">
+                    <div class="sel-wrap">
+                        <select class="sel-wrap-select" id="tone" name="tone">
                             <option value="Exciting">Exciting</option>
                             <option value="Professional">Professional</option>
                             <option value="Friendly">Friendly</option>

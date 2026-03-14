@@ -48,9 +48,9 @@ DEBUG = True  # Set to True for development to serve media files
 
 ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = [
-    "https://web-production-209f.up.railway.app",
     "https://parlorpal.onrender.com",
-    "https://*.trycloudflare.com"
+    "https://*.trycloudflare.com",
+    "http://139.59.19.202"
 ]
 
 
