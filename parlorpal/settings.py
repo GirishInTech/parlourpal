@@ -43,10 +43,12 @@ DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True  # Set to True for development to serve media files
+
+# This will take the value from your .env file on the server
+DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['139.59.19.202', 'localhost', '127.0.0.1']
 CSRF_TRUSTED_ORIGINS = [
     "https://parlorpal.onrender.com",
     "https://*.trycloudflare.com",
