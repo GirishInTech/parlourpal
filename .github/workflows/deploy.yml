@@ -15,11 +15,6 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: root
           key: ${{ secrets.DO_SSH_KEY }}
-          port: 22
-          script_stop: true  # 🛑 Stops the job if deploy.sh fails
           script: |
-            # Ensure git treats this folder as safe (crucial for automation)
-            git config --global --add safe.directory /var/www/parlourpal
             cd /var/www/parlourpal
-            chmod +x deploy.sh
             ./deploy.sh
